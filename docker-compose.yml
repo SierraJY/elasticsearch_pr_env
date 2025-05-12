@@ -7,12 +7,12 @@ services:
       - cluster.name=elastic-docker-cluster
 
       ## 3개의 노드 실행 시
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
+      # - discovery.seed_hosts=es02,es03
+      # - cluster.initial_master_nodes=es01,es02,es03
       
-      ## 노드 하나만 실행 시
-      # - discovery.seed_hosts=es01
-      # - cluster.initial_master_nodes=es01
+      # 노드 하나만 실행 시
+      - discovery.seed_hosts=es01
+      - cluster.initial_master_nodes=es01
 
       - node.roles=master,data,ingest
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -35,45 +35,52 @@ services:
         elasticsearch-plugin install analysis-nori --batch;
       fi &&
       exec /usr/local/bin/docker-entrypoint.sh elasticsearch"
+      # Nori 플러그인 설치 및 로드 관련:
+# - 문제: 다중 노드에서 'Unknown tokenizer type [nori_tokenizer]' 오류 발생.
+# - 원인: `es01`에만 Nori 플러그인 설치 `command`가 있어 다른 노드에는 플러그인이 없음.
+# - 중요: Elasticsearch는 분산 시스템이므로, Nori 토크나이저와 같은 특정 플러그인에 의존하는 인덱스 설정은
+#         클러스터 내의 모든 노드에 해당 플러그인이 설치되어 있어야 합니다.
+# - 해결: `analysis-nori`를 사용하는 모든 Elasticsearch 노드(es01, es02, es03 등)의 `command` 섹션에
+#         `elasticsearch-plugin install analysis-nori --batch;` 명령을 추가하여 플러그인 설치를 보장해야 함.
 
 
-  es02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
-    container_name: es02
-    environment:
-      - node.name=es02
-      - cluster.name=elastic-docker-cluster
-      - discovery.seed_hosts=es01,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - node.roles=master,data,ingest
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=false
-      - network.host=0.0.0.0
-    volumes:
-      - ./config/dictionary:/usr/share/elasticsearch/config/dictionary
-    ports:
-      - 9201:9200
-    networks:
-      - elastic
+  # es02:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
+  #   container_name: es02
+  #   environment:
+  #     - node.name=es02
+  #     - cluster.name=elastic-docker-cluster
+  #     - discovery.seed_hosts=es01,es03
+  #     - cluster.initial_master_nodes=es01,es02,es03
+  #     - node.roles=master,data,ingest
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #     - xpack.security.enabled=false
+  #     - network.host=0.0.0.0
+  #   volumes:
+  #     - ./config/dictionary:/usr/share/elasticsearch/config/dictionary
+  #   ports:
+  #     - 9201:9200
+  #   networks:
+  #     - elastic
 
-  es03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
-    container_name: es03
-    environment:
-      - node.name=es03
-      - cluster.name=elastic-docker-cluster
-      - discovery.seed_hosts=es01,es02
-      - cluster.initial_master_nodes=es01,es02,es03
-      - node.roles=master,data,ingest
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=false
-      - network.host=0.0.0.0
-    volumes:
-      - ./config/dictionary:/usr/share/elasticsearch/config/dictionary
-    ports:
-      - 9202:9200
-    networks:
-      - elastic
+  # es03:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
+  #   container_name: es03
+  #   environment:
+  #     - node.name=es03
+  #     - cluster.name=elastic-docker-cluster
+  #     - discovery.seed_hosts=es01,es02
+  #     - cluster.initial_master_nodes=es01,es02,es03
+  #     - node.roles=master,data,ingest
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #     - xpack.security.enabled=false
+  #     - network.host=0.0.0.0
+  #   volumes:
+  #     - ./config/dictionary:/usr/share/elasticsearch/config/dictionary
+  #   ports:
+  #     - 9202:9200
+  #   networks:
+  #     - elastic
 
   # kibana:
   #   image: docker.elastic.co/kibana/kibana:8.17.1
@@ -106,7 +113,7 @@ services:
   #     - elastic
 
 
-  # (Day 3 - ws lv5에서만 사용)
+  # # (Day 3 - ws lv5에서만 사용)
   # logstash01:
   #   container_name: logstash01
   #   depends_on:
@@ -120,7 +127,7 @@ services:
   #   user: root
   #   volumes:
   #     - ./logstashdata:/usr/share/logstash/data
-  #     - "./logstashdata/skeleton.conf:/usr/share/logstash/pipeline/skeleton.conf"
+  #     - "./pr_codes/data_migration_test/skeleton.conf:/usr/share/logstash/pipeline/skeleton.conf"
   #   environment:
   #     - ELASTIC_USER=elastic
   #     - ELASTIC_PASSWORD=ssafy00
@@ -136,19 +143,19 @@ services:
   #     - elastic
 
 
-  # (Day 3 - ws lv5에서만 사용)
+  # # (Day 3 - ws lv5에서만 사용)
   # postgres:
   #   image: postgres:13
-  #   container_name: postgres
+  #   container_name: postgres_for_es_test
   #   environment:
   #     - POSTGRES_USER=myuser
   #     - POSTGRES_PASSWORD=mypassword
   #     - POSTGRES_DB=mydb
   #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #     - ./logstashdata/init.sql:/docker-entrypoint-initdb.d/init.sql
+  #     - pgdata_for_es_test:/var/lib/postgresql/data
+  #     - ./pr_codes/data_migration_test/init.sql:/docker-entrypoint-initdb.d/init.sql
   #   ports:
-  #     - "5432:5432"
+  #     - "5436:5432"
   #   healthcheck:
   #     test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
   #     interval: 10s
@@ -161,6 +168,6 @@ networks:
   elastic:
     driver: bridge
 
-# volumes:
-#   pgdata:
-#     driver: local
+volumes:
+  pgdata_for_es_test:
+    driver: local
