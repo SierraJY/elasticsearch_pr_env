@@ -11,7 +11,7 @@ services:
       # - cluster.initial_master_nodes=es01,es02,es03
       
       # 노드 하나만 실행 시
-      - discovery.seed_hosts=es01
+      # - discovery.seed_hosts=es01
       - cluster.initial_master_nodes=es01
 
       - node.roles=master,data,ingest
@@ -82,35 +82,34 @@ services:
   #   networks:
   #     - elastic
 
-  # kibana:
-  #   image: docker.elastic.co/kibana/kibana:8.17.1
-  #   container_name: kibana
-  #   depends_on:
-  #     es01:
-  #       condition: service_healthy
-  #   environment:
-  #     - SERVER_NAME=kibana
-  #     - ELASTICSEARCH_HOSTS=http://es01:9200
-  #     - XPACK_ALERTING_ENABLED=false
-  #     - XPACK_ACTIONS_ENABLED=false
-  #     - XPACK_RULE_REGISTRY_WRITE_ENABLED=false
-  #     - TELEMETRY_ENABLED=false
-  #     - XPACK_SECURITY_SOLUTION_ENABLED=false
-  #     - XPACK_INFRA_ENABLED=false
-  #     - XPACK_LOGS_ENABLED=false
-  #     - XPACK_ALERTING_ENABLED=false
-  #     - XPACK_APM_ENABLED=false
-  #     - XPACK_FLEET_ENABLED=false
-  #     - XPACK_SECURITY_SOLUTION_ENABLED=false
-  #     - XPACK_OBSERVABILITY_ENABLED=false
-  #     - XPACK_REPORTING_ENABLED=false
-  #     - XPACK_ML_ENABLED=false
-  #     - TELEMETRY_ENABLED=false
-  #     - MONITORING_ENABLED=false
-  #   ports:
-  #     - 5601:5601
-  #   networks:
-  #     - elastic
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.17.1
+    container_name: kibana
+    depends_on:
+      es01:
+        condition: service_healthy
+    environment:
+      - SERVER_NAME=kibana
+      - ELASTICSEARCH_HOSTS=http://es01:9200
+      - XPACK_ALERTING_ENABLED=false
+      - XPACK_ACTIONS_ENABLED=false
+      - XPACK_RULE_REGISTRY_WRITE_ENABLED=false
+      - TELEMETRY_ENABLED=false
+      - XPACK_SECURITY_SOLUTION_ENABLED=false
+      - XPACK_INFRA_ENABLED=false
+      - XPACK_LOGS_ENABLED=false
+      - XPACK_ALERTING_ENABLED=false
+      - XPACK_APM_ENABLED=false
+      - XPACK_FLEET_ENABLED=false
+      - XPACK_OBSERVABILITY_ENABLED=false
+      - XPACK_REPORTING_ENABLED=false
+      - XPACK_ML_ENABLED=false
+      - TELEMETRY_ENABLED=false
+      - MONITORING_ENABLED=false
+    ports:
+      - 5601:5601
+    networks:
+      - elastic
 
 
   # # (Day 3 - ws lv5에서만 사용)
